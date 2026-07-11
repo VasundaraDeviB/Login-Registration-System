@@ -1,11 +1,15 @@
 #include <iostream>
 #include <string>
+#include <fstream>
 
 using namespace std;
 
 // Function to register a user
-void registerUser(string &username, string &password)
+void registerUser()
 {
+    string username, password;
+    string existingUsername, existingPassword;
+
     cout << "\n===== Registration =====" << endl;
 
     cout << "Enter Username: ";
@@ -14,13 +18,48 @@ void registerUser(string &username, string &password)
     cout << "Enter Password: ";
     cin >> password;
 
+    // Basic input validation
+    if (username.empty())
+    {
+        cout << "\nUsername cannot be empty!" << endl;
+        return;
+    }
+
+    if (password.length() < 4)
+    {
+        cout << "\nPassword must contain at least 4 characters!" << endl;
+        return;
+    }
+
+    // Check for duplicate username
+    ifstream infile("users.txt");
+
+    while (infile >> existingUsername >> existingPassword)
+    {
+        if (existingUsername == username)
+        {
+            cout << "\nUsername already exists! Please choose another username." << endl;
+            infile.close();
+            return;
+        }
+    }
+
+    infile.close();
+
+    // Save new user
+    ofstream outfile("users.txt", ios::app);
+    outfile << username << " " << password << endl;
+    outfile.close();
+
     cout << "\nRegistration Successful!" << endl;
 }
 
 // Function to login
-void loginUser(string username, string password)
+void loginUser()
 {
     string inputUsername, inputPassword;
+    string username, password;
+    bool found = false;
 
     cout << "\n===== Login =====" << endl;
 
@@ -30,9 +69,22 @@ void loginUser(string username, string password)
     cout << "Enter Password: ";
     cin >> inputPassword;
 
-    if (inputUsername == username && inputPassword == password)
+    ifstream infile("users.txt");
+
+    while (infile >> username >> password)
     {
-        cout << "\nLogin Successful! Welcome " << username << "." << endl;
+        if (inputUsername == username && inputPassword == password)
+        {
+            found = true;
+            break;
+        }
+    }
+
+    infile.close();
+
+    if (found)
+    {
+        cout << "\nLogin Successful! Welcome " << inputUsername << "!" << endl;
     }
     else
     {
@@ -42,8 +94,6 @@ void loginUser(string username, string password)
 
 int main()
 {
-    string username = "";
-    string password = "";
     int choice;
 
     do
@@ -61,18 +111,11 @@ int main()
         switch (choice)
         {
         case 1:
-            registerUser(username, password);
+            registerUser();
             break;
 
         case 2:
-            if (username == "")
-            {
-                cout << "\nPlease register first!" << endl;
-            }
-            else
-            {
-                loginUser(username, password);
-            }
+            loginUser();
             break;
 
         case 3:
